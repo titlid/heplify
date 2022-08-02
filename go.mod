@@ -5,7 +5,7 @@ go 1.15
 require (
 	github.com/cespare/xxhash v1.1.0 // indirect
 	github.com/gogo/protobuf v1.3.1
-	github.com/google/gopacket v1.1.18
+	github.com/google/gopacket v1.1.19
 	github.com/negbie/freecache v1.1.0
 	github.com/negbie/logp v0.0.0-20190313141056-04cebff7f846
 	github.com/segmentio/encoding v0.1.15

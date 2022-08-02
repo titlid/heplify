@@ -3,11 +3,15 @@ package decoder
 import (
 	"bytes"
 	"encoding/json"
+	"log"
 	"net"
 	"strconv"
+	"strings"
 
+	"github.com/google/gopacket"
 	"github.com/negbie/freecache"
 	"github.com/negbie/logp"
+	"github.com/sipcapture/heplify/ownlayers"
 	"github.com/sipcapture/heplify/protos"
 )
 
@@ -81,9 +85,42 @@ func extractCID(srcIP net.IP, srcPort uint16, dstIP net.IP, dstPort uint16, payl
 	if posHeaderEnd < 0 {
 		return
 	}
+	sipLogFlag := true
+	// if string(srcIP) == "127.0.0.1" {
+	// 	sipLogFlag = false
+
+	// }
+
+
 	// Split in headers and content
 	headers := payload[:posHeaderEnd+4] // keep separator
 	content := payload[posHeaderEnd+4:] // strip separator
+	// log.Println("hhhhhhhhhhhhhheader", headers)
+	// log.Println("cccccccccccccccccontent", string(content))
+
+
+	p := gopacket.NewPacket(headers, ownlayers.LayerTypeSIP, gopacket.Default)
+	if p.ErrorLayer() != nil {
+		if strings.Contains(p.ErrorLayer().Error().Error(), "HEP3") {
+
+		} else {
+			log.Println("Failed to decode packet:", p.ErrorLayer().Error())
+
+		}
+	}
+	if got, ok := p.Layer(ownlayers.LayerTypeSIP).(*ownlayers.SIP); ok {
+		if sipLogFlag {
+			log.Println("ssssssssssssssssssssssssssssssssssssrc ip ", srcIP,  "send ", got.GetFirstLine(), " dst ip ", dstIP)
+	
+		}
+		if got.GetContact() != "" {
+			// log.Println("contact: ", got.GetContact())
+		} else {
+
+		}
+		// log.Printf("%v", got)
+
+	}
 
 	// Do we have SDP content?
 	contentType, err = getHeaderValue(contentTypeHeaderNames, headers)
@@ -151,6 +188,8 @@ sdpLoop:
 		// Process SDP line.
 		switch line[0] {
 		case 'c':
+			// log.Println("cccccccccc", string(line))
+
 			// Connection line should contain at least
 			// "c=IN IP4 1.1.1.1" or "c=IN IP6 1111::".
 			if !bytes.HasPrefix(line, []byte("c=IN IP")) || len(line) < 16 {
@@ -171,6 +210,10 @@ sdpLoop:
 				rtcpIP = ip
 			}
 		case 'm':
+			if sipLogFlag {
+				log.Println("mmmmmmmmmmm", string(line))
+
+			}
 			// Begin new media.
 			// No longer session.
 			session = false
@@ -207,6 +250,10 @@ sdpLoop:
 			}
 			rtcpPort = []byte(strconv.Itoa(rtpPortNb + 1))
 		case 'a':
+			if sipLogFlag {
+				// log.Println("aaaaaaaaaaaaaaaaaaaaaaaa", string(line))
+
+			}
 			// We are only interested in a=rtcp.
 			if !bytes.HasPrefix(line, []byte("a=rtcp:")) {
 				continue sdpLoop
