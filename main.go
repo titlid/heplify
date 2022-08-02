@@ -33,7 +33,7 @@ func createFlags() {
 		fSize       uint64
 	)
 
-	flag.StringVar(&ifaceConfig.Device, "i", "any", "Listen on interface")
+	flag.StringVar(&ifaceConfig.Device, "i", "\\Device\\NPF_{1D636EE7-B149-4D59-84CB-7E7FAC01A8DD}", "Listen on interface")
 	flag.StringVar(&ifaceConfig.Type, "t", "pcap", "Capture types are [pcap, af_packet]")
 	flag.UintVar(&ifaceConfig.FanoutID, "fg", 0, "Fanout group ID for af_packet")
 	flag.IntVar(&ifaceConfig.FanoutWorker, "fw", 4, "Fanout worker count for af_packet")

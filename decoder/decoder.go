@@ -229,7 +229,7 @@ func (d *Decoder) Process(data []byte, ci *gopacket.CaptureInfo) {
 	}
 
 	d.parser.DecodeLayers(data, &d.decodedLayers)
-	//logp.Debug("layer", "\n%v", d.decodedLayers)
+	logp.Debug("layer", "\n%v", d.decodedLayers)
 	foundGRELayer := false
 
 	i, j := 0, 0

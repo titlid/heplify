@@ -91,13 +91,11 @@ func extractCID(srcIP net.IP, srcPort uint16, dstIP net.IP, dstPort uint16, payl
 
 	// }
 
-
 	// Split in headers and content
 	headers := payload[:posHeaderEnd+4] // keep separator
 	content := payload[posHeaderEnd+4:] // strip separator
 	// log.Println("hhhhhhhhhhhhhheader", headers)
 	// log.Println("cccccccccccccccccontent", string(content))
-
 
 	p := gopacket.NewPacket(headers, ownlayers.LayerTypeSIP, gopacket.Default)
 	if p.ErrorLayer() != nil {
@@ -110,8 +108,8 @@ func extractCID(srcIP net.IP, srcPort uint16, dstIP net.IP, dstPort uint16, payl
 	}
 	if got, ok := p.Layer(ownlayers.LayerTypeSIP).(*ownlayers.SIP); ok {
 		if sipLogFlag {
-			log.Println("ssssssssssssssssssssssssssssssssssssrc ip ", srcIP,  "send ", got.GetFirstLine(), " dst ip ", dstIP)
-	
+			log.Println("ssssssssssssssssssssssssssssssssssssrc ip ", srcIP, "send ", got.GetFirstLine(), " dst ip ", dstIP)
+
 		}
 		if got.GetContact() != "" {
 			// log.Println("contact: ", got.GetContact())
@@ -141,6 +139,8 @@ func extractCID(srcIP net.IP, srcPort uint16, dstIP net.IP, dstPort uint16, payl
 			// No SDP, nothing to do.
 			return
 		}
+		log.Println("Found sdp in multipart message. srcIP=%v, srcPort=%v, dstIP=%v, dstPort=%v",
+			srcIP, srcPort, dstIP, dstPort)
 		logp.Debug("sdp", "Found sdp in multipart message. srcIP=%v, srcPort=%v, dstIP=%v, dstPort=%v",
 			srcIP, srcPort, dstIP, dstPort)
 	}
@@ -180,12 +180,14 @@ sdpLoop:
 		if len(line) < 2 || line[1] != '=' {
 			// Multipart content contains non SDP lines, do not clutter the log.
 			if !multipart {
+				log.Println("Fishy sdp line %q. callID=%q", line, callID)
 				logp.Debug("sdp", "Fishy sdp line %q. callID=%q", line, callID)
 			}
 			continue sdpLoop
 		}
 
 		// Process SDP line.
+		log.Println("ssssssssssssssssdp", line[0])
 		switch line[0] {
 		case 'c':
 			// log.Println("cccccccccc", string(line))
@@ -231,6 +233,8 @@ sdpLoop:
 			// Find separator after RTP port number.
 			sep := bytes.Index(line[8:], []byte(" "))
 			if sep < 4 { // Port should be above 1000
+				log.Println("sdp", "Fishy m=audio line %q. callID=%q", line, callID)
+
 				logp.Debug("sdp", "Fishy m=audio line %q. callID=%q", line, callID)
 				continue sdpLoop
 			}
