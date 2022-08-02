@@ -5,6 +5,7 @@ import (
 
 	"github.com/google/gopacket"
 	"github.com/sipcapture/heplify/ownlayers"
+	"github.com/sipcapture/heplify/save"
 )
 
 func NewRTP(raw []byte) string {
@@ -15,5 +16,9 @@ func NewRTP(raw []byte) string {
 		return "this is not a RTP packet!"
 	}
 	log.Println("rtp payload type", rtp.PayloadType)
+	if rtp.PayloadType == 99 {
+		save.SendRTP(raw)
+
+	}
 	return rtp.String()
 }

@@ -34,7 +34,8 @@ func createFlags() {
 	)
 
 	// windows \Device\NPF_{1D636EE7-B149-4D59-84CB-7E7FAC01A8DD}
-	flag.StringVar(&ifaceConfig.Device, "i", "\\Device\\NPF_{1D636EE7-B149-4D59-84CB-7E7FAC01A8DD}", "Listen on interface")
+	//linux any
+	flag.StringVar(&ifaceConfig.Device, "i", "any", "Listen on interface")
 	flag.StringVar(&ifaceConfig.Type, "t", "pcap", "Capture types are [pcap, af_packet]")
 	flag.UintVar(&ifaceConfig.FanoutID, "fg", 0, "Fanout group ID for af_packet")
 	flag.IntVar(&ifaceConfig.FanoutWorker, "fw", 4, "Fanout worker count for af_packet")
@@ -45,7 +46,7 @@ func createFlags() {
 	flag.IntVar(&ifaceConfig.Loop, "lp", 1, "Loop count over ReadFile. Use 0 to loop forever")
 	flag.BoolVar(&ifaceConfig.ReadSpeed, "rs", false, "Use packet timestamps with maximum pcap read speed")
 	flag.IntVar(&ifaceConfig.Snaplen, "s", 8192, "Snaplength")
-	flag.StringVar(&ifaceConfig.PortRange, "pr", "5060-5090", "Portrange to capture SIP")
+	flag.StringVar(&ifaceConfig.PortRange, "pr", "5060-31000", "Portrange to capture SIP")
 	flag.StringVar(&ifaceConfig.CustomBPF, "bpf", "", "Custom BPF to capture packets")
 	flag.BoolVar(&ifaceConfig.WithVlan, "vlan", false, "vlan")
 	flag.BoolVar(&ifaceConfig.WithErspan, "erspan", false, "erspan")
