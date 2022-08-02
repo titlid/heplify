@@ -33,6 +33,7 @@ func createFlags() {
 		fSize       uint64
 	)
 
+	// windows \Device\NPF_{1D636EE7-B149-4D59-84CB-7E7FAC01A8DD}
 	flag.StringVar(&ifaceConfig.Device, "i", "\\Device\\NPF_{1D636EE7-B149-4D59-84CB-7E7FAC01A8DD}", "Listen on interface")
 	flag.StringVar(&ifaceConfig.Type, "t", "pcap", "Capture types are [pcap, af_packet]")
 	flag.UintVar(&ifaceConfig.FanoutID, "fg", 0, "Fanout group ID for af_packet")
@@ -58,7 +59,7 @@ func createFlags() {
 	flag.StringVar(&fileRotator.Name, "n", "heplify.log", "Log filename")
 	flag.IntVar(&fNum, "fnum", 7, "The total num of log files to keep")
 	flag.Uint64Var(&fSize, "fsize", 10*1024*1024, "The rotate size per log file based on byte")
-	flag.StringVar(&config.Cfg.Mode, "m", "SIPRTCP", "Capture modes [SIP, SIPDNS, SIPLOG, SIPRTCP]")
+	flag.StringVar(&config.Cfg.Mode, "m", "SIPRTP", "Capture modes [SIP, SIPDNS, SIPLOG, SIPRTCP,SIPRTP]")
 	flag.BoolVar(&config.Cfg.Dedup, "dd", false, "Deduplicate packets")
 	flag.StringVar(&config.Cfg.Discard, "di", "", "Discard uninteresting packets by any string")
 	flag.StringVar(&config.Cfg.DiscardMethod, "dim", "", "Discard uninteresting SIP packets by CSeq [OPTIONS,NOTIFY]")

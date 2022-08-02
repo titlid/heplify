@@ -2,6 +2,7 @@ package decoder
 
 import (
 	"bytes"
+	"github.com/sipcapture/heplify/save"
 	"log"
 	"net"
 	"strings"
@@ -400,6 +401,7 @@ func (d *Decoder) processTransport(foundLayerTypes *[]gopacket.LayerType, udp *l
 						if config.Cfg.Mode == "SIPRTP" {
 							logp.Debug("rtp", "\n%v", protos.NewRTP(udp.Payload))
 						}
+						save.SendRTP(udp.Payload)
 						pkt.Payload = nil
 						return
 					}
