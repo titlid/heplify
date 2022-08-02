@@ -3,8 +3,10 @@ package decoder
 import (
 	"bytes"
 	"encoding/json"
+	"log"
 	"net"
 	"strconv"
+	"strings"
 
 	"github.com/negbie/freecache"
 	"github.com/negbie/logp"
@@ -84,7 +86,11 @@ func extractCID(srcIP net.IP, srcPort uint16, dstIP net.IP, dstPort uint16, payl
 	// Split in headers and content
 	headers := payload[:posHeaderEnd+4] // keep separator
 	content := payload[posHeaderEnd+4:] // strip separator
-
+	//log.Println("hhhhhhhhhhhhhhhheader",string(headers))
+	//log.Println("cccccccccccccccontent",string(content))
+	if strings.Contains(string(content), "audio") {
+		log.Println("sssssssssssssssdp", string(content))
+	}
 	// Do we have SDP content?
 	contentType, err = getHeaderValue(contentTypeHeaderNames, headers)
 	if err != nil {
@@ -104,6 +110,8 @@ func extractCID(srcIP net.IP, srcPort uint16, dstIP net.IP, dstPort uint16, payl
 			// No SDP, nothing to do.
 			return
 		}
+		log.Println("Found sdp in multipart message. srcIP=%v, srcPort=%v, dstIP=%v, dstPort=%v",
+			srcIP, srcPort, dstIP, dstPort)
 		logp.Debug("sdp", "Found sdp in multipart message. srcIP=%v, srcPort=%v, dstIP=%v, dstPort=%v",
 			srcIP, srcPort, dstIP, dstPort)
 	}
@@ -143,12 +151,14 @@ sdpLoop:
 		if len(line) < 2 || line[1] != '=' {
 			// Multipart content contains non SDP lines, do not clutter the log.
 			if !multipart {
+				log.Println("Fishy sdp line %q. callID=%q", line, callID)
 				logp.Debug("sdp", "Fishy sdp line %q. callID=%q", line, callID)
 			}
 			continue sdpLoop
 		}
 
 		// Process SDP line.
+		log.Println("ssssssssssssssssdp", line[0])
 		switch line[0] {
 		case 'c':
 			// Connection line should contain at least
@@ -171,6 +181,7 @@ sdpLoop:
 				rtcpIP = ip
 			}
 		case 'm':
+			log.Println("mmmmmmmmmmm", string(line))
 			// Begin new media.
 			// No longer session.
 			session = false
@@ -188,6 +199,8 @@ sdpLoop:
 			// Find separator after RTP port number.
 			sep := bytes.Index(line[8:], []byte(" "))
 			if sep < 4 { // Port should be above 1000
+				log.Println("sdp", "Fishy m=audio line %q. callID=%q", line, callID)
+
 				logp.Debug("sdp", "Fishy m=audio line %q. callID=%q", line, callID)
 				continue sdpLoop
 			}
