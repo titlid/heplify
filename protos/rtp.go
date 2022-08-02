@@ -1,9 +1,10 @@
 package protos
 
 import (
+	"log"
+
 	"github.com/google/gopacket"
 	"github.com/sipcapture/heplify/ownlayers"
-	"log"
 )
 
 func NewRTP(raw []byte) string {
@@ -14,6 +15,5 @@ func NewRTP(raw []byte) string {
 		return "this is not a RTP packet!"
 	}
 	log.Println("rtp payload type", rtp.PayloadType)
-
 	return rtp.String()
 }

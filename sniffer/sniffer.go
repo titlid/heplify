@@ -6,6 +6,7 @@ import (
 	"encoding/binary"
 	"fmt"
 	"io"
+	"log"
 	"net"
 	"os"
 	"os/signal"
@@ -170,6 +171,8 @@ func (sniffer *SnifferSetup) setFromConfig() error {
 			}
 		} else {
 			sniffer.pcapHandle, err = pcap.OpenLive(sniffer.config.Device, int32(sniffer.config.Snaplen), true, 1*time.Second)
+			// sniffer.pcapHandle, err = pcap.OpenLive(sniffer.config.Device, int32(sniffer.config.Snaplen), false, 10*time.Second)
+			// log.Println("aaaaaaaaaaa")
 			if err != nil {
 				return fmt.Errorf("setting pcap live mode: %v", err)
 			}
@@ -179,6 +182,7 @@ func (sniffer *SnifferSetup) setFromConfig() error {
 			}
 		}
 
+		// sniffer.DataSource = gopacket.PacketDataSource(sniffer.pcapHandle)
 		sniffer.DataSource = gopacket.PacketDataSource(sniffer.pcapHandle)
 
 	case "af_packet":
@@ -354,7 +358,7 @@ LOOP:
 				}
 
 				logp.Debug("collector", fmt.Sprintf("received hep data from %s\n", remote))
-
+				log.Println("mmmmmmmmmessage", message)
 				if bytes.HasPrefix(message, []byte{0x48, 0x45, 0x50, 0x33}) {
 					//counter
 					atomic.AddUint64(&sniffer.hepUDPCount, 1)
@@ -381,10 +385,10 @@ LOOP:
 			}
 
 		} else {
-
 			data, ci, err := sniffer.DataSource.ReadPacketData()
 
 			if err == pcap.NextErrorTimeoutExpired || sniffer.afpacketHandle.IsErrTimeout(err) || err == syscall.EINTR {
+				// log.Println("eeeeeeeeeeeeeeeeeeerror happened", err, string(data))
 				continue
 			}
 

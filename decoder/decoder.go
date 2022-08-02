@@ -203,7 +203,7 @@ func (d *Decoder) defragIP6(i6 layers.IPv6, i6frag layers.IPv6Fragment, t time.T
 }
 
 func (d *Decoder) Process(data []byte, ci *gopacket.CaptureInfo) {
-	log.Println("ccc")
+	// log.Println("pppppppppprecess msg")
 	if config.Cfg.Dedup {
 		if len(data) > 34 {
 			_, err := d.dedupCache.Get(data[34:])
@@ -271,6 +271,7 @@ func (d *Decoder) Process(data []byte, ci *gopacket.CaptureInfo) {
 			}
 
 		case layers.LayerTypeIPv4:
+			// log.Println("gggggggget iiiiiiiiiiipv4 msg")
 			atomic.AddUint64(&d.ip4Count, 1)
 			if d.ip4.Flags&layers.IPv4DontFragment != 0 || (d.ip4.Flags&layers.IPv4MoreFragments == 0 && d.ip4.FragOffset == 0) {
 				d.processTransport(&d.decodedLayers, &d.udp, &d.tcp, &d.sctp, d.ip4.NetworkFlow(), ci, 0x02, uint8(d.ip4.Protocol), d.ip4.SrcIP, d.ip4.DstIP)
@@ -365,6 +366,7 @@ func (d *Decoder) processTransport(foundLayerTypes *[]gopacket.LayerType, udp *l
 			pkt.Vlan = d.d1q.VLANIdentifier
 
 		case layers.LayerTypeUDP:
+			// log.Println("geeeeeeeeeeeeeeeet udp msg", string(udp.Payload))
 			if len(udp.Payload) < 16 {
 				logp.Warn("received too small %d byte UDP packet with payload %v", len(udp.Payload), udp.Payload)
 				return
@@ -374,6 +376,7 @@ func (d *Decoder) processTransport(foundLayerTypes *[]gopacket.LayerType, udp *l
 			pkt.DstPort = uint16(udp.DstPort)
 			pkt.Payload = udp.Payload
 			atomic.AddUint64(&d.udpCount, 1)
+			// log.Println("udp pkt:  ", pkt.Version, pkt.Protocol, pkt.CID, pkt.DstIP, pkt.ProtoType)
 			logp.Debug("payload", "UDP:\n%s", pkt)
 
 			if config.Cfg.Mode == "SIPLOG" {
@@ -389,6 +392,7 @@ func (d *Decoder) processTransport(foundLayerTypes *[]gopacket.LayerType, udp *l
 				if (udp.Payload[0]&0xc0)>>6 == 2 {
 					if (udp.Payload[1] == 200 || udp.Payload[1] == 201 || udp.Payload[1] == 207) && udp.SrcPort%2 != 0 && udp.DstPort%2 != 0 {
 						pkt.Payload, pkt.CID = correlateRTCP(pkt.SrcIP, pkt.SrcPort, pkt.DstIP, pkt.DstPort, udp.Payload)
+						log.Println("correlateRTCPppppppppppppppp")
 						if pkt.Payload != nil {
 							pkt.ProtoType = 5
 							atomic.AddUint64(&d.rtcpCount, 1)
@@ -398,6 +402,8 @@ func (d *Decoder) processTransport(foundLayerTypes *[]gopacket.LayerType, udp *l
 						atomic.AddUint64(&d.rtcpFailCount, 1)
 						return
 					} else if udp.SrcPort%2 == 0 && udp.DstPort%2 == 0 {
+						log.Println("rrrrrrrrrrrrrrrrrrrtp")
+
 						if config.Cfg.Mode == "SIPRTP" {
 							logp.Debug("rtp", "\n%v", protos.NewRTP(udp.Payload))
 						}
